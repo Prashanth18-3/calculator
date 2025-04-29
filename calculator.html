@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #222;
+      --primary-color: #4CAF50;
+      --secondary-color: #ff9800;
+      --accent-color: #e57373;
+      --background-gradient: linear-gradient(135deg, #74ebd5, #ACB6E5);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1e1e1e;
+      --text-color: #f1f1f1;
+      --primary-color: #66bb6a;
+      --secondary-color: #ffa726;
+      --accent-color: #ef5350;
+      --background-gradient: linear-gradient(135deg, #232526, #414345);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--background-gradient);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      transition: background 0.5s;
+    }
+
+    .calculator {
+      background: var(--bg-color);
+      padding: 25px 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      width: 350px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      transition: background 0.5s, color 0.5s;
+    }
+
+    .calculator header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .calculator h1 {
+      color: var(--text-color);
+      font-weight: 600;
+      font-size: 1.8rem;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 2px solid var(--primary-color);
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      color: var(--primary-color);
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--primary-color);
+      color: #fff;
+    }
+
+    .history {
+      min-height: 40px;
+      text-align: right;
+      font-size: 0.9rem;
+      color: var(--text-color);
+      overflow-y: auto;
+      max-height: 60px;
+    }
+
+    .display {
+      background: #f4f4f4;
+      padding: 15px;
+      text-align: right;
+      font-size: 2rem;
+      border-radius: 10px;
+      overflow-x: auto;
+      color: var(--text-color);
+      min-height: 60px;
+      background: var(--bg-color);
+      border: 1px solid #ccc;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      padding: 18px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      background-color: #eee;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #ddd;
+    }
+
+    .operator {
+      background-color: var(--secondary-color);
+      color: #fff;
+    }
+
+    .special {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
+
+    .equal {
+      background-color: var(--primary-color);
+      color: #fff;
+      grid-column: span 2;
+    }
+
+    @media (max-width: 400px) {
+      .calculator {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="calculator" id="calculator">
+    <header>
+      <h1>Calculator</h1>
+      <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+    </header>
+    <div class="history" id="history"></div>
+    <div class="display" id="display" aria-live="polite">0</div>
+    <div class="buttons">
+      <button class="special" onclick="clearEntry()">CE</button>
+      <button class="special" onclick="clearAll()">C</button>
+      <button class="special" onclick="backspace()">⌫</button>
+      <button class="operator" onclick="inputOperator('/')">÷</button>
+
+      <button onclick="inputNumber('7')">7</button>
+      <button onclick="inputNumber('8')">8</button>
+      <button onclick="inputNumber('9')">9</button>
+      <button class="operator" onclick="inputOperator('*')">×</button>
+
+      <button onclick="inputNumber('4')">4</button>
+      <button onclick="inputNumber('5')">5</button>
+      <button onclick="inputNumber('6')">6</button>
+      <button class="operator" onclick="inputOperator('-')">-</button>
+
+      <button onclick="inputNumber('1')">1</button>
+      <button onclick="inputNumber('2')">2</button>
+      <button onclick="inputNumber('3')">3</button>
+      <button class="operator" onclick="inputOperator('+')">+</button>
+
+      <button onclick="inputNumber('0')">0</button>
+      <button onclick="inputDecimal()">.</button>
+      <button class="equal" onclick="calculateResult()">=</button>
+    </div>
+  </div>
+
+  <script>
+    let display = document.getElementById('display');
+    let historyDiv = document.getElementById('history');
+    let calculator = document.getElementById('calculator');
+    let currentInput = '0';
+    let prevInput = '';
+    let operator = '';
+    let resetNext = false;
+    let theme = 'light';
+
+    function inputNumber(num) {
+      if (currentInput === '0' || resetNext) {
+        currentInput = num;
+        resetNext = false;
+      } else {
+        currentInput += num;
+      }
+      updateDisplay();
+    }
+
+    function inputDecimal() {
+      if (!currentInput.includes('.')) {
+        currentInput += '.';
+      }
+      updateDisplay();
+    }
+
+    function inputOperator(op) {
+      if (operator && !resetNext) {
+        calculateResult();
+      }
+      prevInput = currentInput;
+      operator = op;
+      resetNext = true;
+      updateHistory(`${prevInput} ${operator}`);
+    }
+
+    function clearEntry() {
+      currentInput = '0';
+      updateDisplay();
+    }
+
+    function clearAll() {
+      currentInput = '0';
+      prevInput = '';
+      operator = '';
+      historyDiv.innerHTML = '';
+      updateDisplay();
+    }
+
+    function backspace() {
+      if (currentInput.length > 1) {
+        currentInput = currentInput.slice(0, -1);
+      } else {
+        currentInput = '0';
+      }
+      updateDisplay();
+    }
+
+    function calculateResult() {
+      if (!operator) return;
+      const prev = parseFloat(prevInput);
+      const current = parseFloat(currentInput);
+      let result = 0;
+      switch (operator) {
+        case '+': result = prev + current; break;
+        case '-': result = prev - current; break;
+        case '*': result = prev * current; break;
+        case '/': result = current !== 0 ? prev / current : 'Error'; break;
+        default: return;
+      }
+      updateHistory(`${prevInput} ${operator} ${current} = ${result}`);
+      currentInput = result.toString();
+      operator = '';
+      prevInput = '';
+      resetNext = true;
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      display.textContent = currentInput;
+    }
+
+    function updateHistory(entry) {
+      const p = document.createElement('p');
+      p.textContent = entry;
+      historyDiv.appendChild(p);
+      historyDiv.scrollTop = historyDiv.scrollHeight;
+    }
+
+    function toggleTheme() {
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        theme = 'dark';
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        theme = 'light';
+      }
+    }
+
+    // Allow keyboard support
+    window.addEventListener('keydown', (e) => {
+      if (/\d/.test(e.key)) inputNumber(e.key);
+      else if (['+', '-', '*', '/'].includes(e.key)) inputOperator(e.key);
+      else if (e.key === 'Enter' || e.key === '=') calculateResult();
+      else if (e.key === 'Backspace') backspace();
+      else if (e.key === '.') inputDecimal();
+      else if (e.key.toLowerCase() === 'c') clearEntry();
+    });
+  </script>
+
+</body>
+</html>
