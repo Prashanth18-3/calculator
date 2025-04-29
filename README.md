@@ -1,3 +1,5 @@
+CALCULATOR
+
 Project Showcase:Smart Modern Calculator - Dark/Light Mode | Responsive | Keyboard Support
 A beautiful, responsive, and feature-rich smart calculator designed for everyday use. It supports basic arithmetic operations, dynamic history tracking, keyboard inputs, and a stylish dark/light theme switcher — all wrapped in a clean and accessible interface.
 
